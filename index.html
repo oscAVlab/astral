@@ -27,7 +27,7 @@ input[type="range"]{accent-color:var(--accent)}
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 
-#header{height:38px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:5px 14px;border-bottom:1px solid var(--border);background:var(--bg2)}
+#header{height:80px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:5px 14px;border-bottom:1px solid var(--border);background:var(--bg2)}
 .brand-mark{display:flex;align-items:baseline;flex-shrink:0;padding-right:10px;border-right:1px solid var(--border2);font-family:'Roboto',sans-serif;font-size:15px;letter-spacing:-0.025em;line-height:1}
 .brand-mark .bm-text{color:rgba(244,241,234,0.65);font-weight:300}
 .brand-mark .bm-block{display:inline-flex;transform:translateY(3.75px);margin-left:1.13px;margin-right:0.53px}
@@ -35,7 +35,12 @@ input[type="range"]{accent-color:var(--accent)}
 
 #app{display:flex;height:calc(100% - 38px)}
 #panel-left{width:290px;flex-shrink:0;border-right:1px solid var(--border);padding:10px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
-#panel-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;overflow:auto;background:radial-gradient(ellipse at center,#121210 0%,#0D0D0C 70%)}
+#panel-center{flex:1;display:flex;flex-direction:column;padding:14px;overflow:hidden;background:radial-gradient(ellipse at center,#121210 0%,#0D0D0C 70%)}
+#wheel-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#rta-wrap{flex:0 0 26%;min-height:100px;display:flex;flex-direction:column;margin-top:8px}
+#rta-canvas{flex:1;width:100%;min-height:0;display:block;border:1px solid var(--border);border-radius:4px}
+.opacity-row{display:flex;align-items:center;gap:5px}
+.opacity-row input[type="range"]{width:70px}
 #panel-right{width:340px;flex-shrink:0;border-left:1px solid var(--border);display:flex;flex-direction:column}
 #bodies-list{flex:1;overflow-y:auto;padding:8px}
 
@@ -71,7 +76,7 @@ input[type="range"]{accent-color:var(--accent)}
 <path d="M 3.15 0 L 5.5125 -3.36 L 7.875 0 L 10.2375 3.36 L 12.6 0" fill="none" stroke="#00B3A4" stroke-width="1.05" stroke-linejoin="miter" stroke-linecap="square"/>
 </svg></span><span class="bm-text">lab</span>
 </div>
-<h1>Astral <span style="font-family:'Roboto Mono',monospace;font-size:9px;color:var(--text4);font-weight:400;letter-spacing:0.04em;vertical-align:middle">v1.02</span></h1>
+<h1>Astral <span style="font-family:'Roboto Mono',monospace;font-size:9px;color:var(--text4);font-weight:400;letter-spacing:0.04em;vertical-align:middle">v1.07</span></h1>
 <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
 <button class="btn-sm" id="play-btn" disabled>▶ Play</button>
 <button class="btn-sm" id="stop-btn" disabled>■ Stop</button>
@@ -90,7 +95,27 @@ input[type="range"]{accent-color:var(--accent)}
 <input type="number" id="natal-lat" placeholder="Lat" value="-0.18" step="0.01" style="width:70px">
 <input type="number" id="natal-lon-input" placeholder="Lon" value="-78.47" step="0.01" style="width:70px">
 </div>
+<div class="row" style="margin-bottom:4px;gap:3px">
+<span style="font-size:9px;color:var(--text3);align-self:center">Casas</span>
+<button class="btn-sm active" id="house-equal-btn" style="font-size:9px">Iguales</button>
+<button class="btn-sm" id="house-placidus-btn" style="font-size:9px">Placidus</button>
+</div>
 <button class="btn" id="calc-btn" style="width:100%">Calcular carta</button>
+<div id="asc-mc-info" style="font-family:'Roboto Mono',monospace;font-size:9px;color:var(--text3);margin-top:4px"></div>
+</div>
+
+<div class="section">
+<label class="label">Envolvente (ambient)</label>
+<div class="row" style="align-items:center;margin-bottom:4px;gap:4px">
+<span style="font-size:9px;color:var(--text3);min-width:44px">Attack</span>
+<input type="range" id="env-attack" min="0.05" max="3" step="0.05" value="0.8" style="flex:1">
+<span style="font-size:9px;color:var(--text3);min-width:30px;text-align:right" id="env-attack-val">0.80s</span>
+</div>
+<div class="row" style="align-items:center;gap:4px">
+<span style="font-size:9px;color:var(--text3);min-width:44px">Decay</span>
+<input type="range" id="env-decay" min="0.2" max="10" step="0.1" value="4" style="flex:1">
+<span style="font-size:9px;color:var(--text3);min-width:30px;text-align:right" id="env-decay-val">4.0s</span>
+</div>
 </div>
 
 <div class="section">
@@ -101,12 +126,18 @@ input[type="range"]{accent-color:var(--accent)}
 <span style="font-size:8px;color:var(--text4)">Hz</span>
 </div>
 <span style="font-size:9px;color:var(--text3);display:block;margin-bottom:3px">Escala natal</span>
-<div class="row" id="natal-scale-toggle" style="flex-wrap:wrap;gap:3px">
+<div class="row" id="natal-scale-toggle" style="flex-wrap:wrap;gap:3px;margin-bottom:5px">
 <button class="btn-sm active" data-scale="free">Libre</button>
 <button class="btn-sm" data-scale="chromatic">Cromático</button>
 <button class="btn-sm" data-scale="pentatonic">Pentatónico</button>
 <button class="btn-sm" data-scale="diatonic">Diatónico</button>
 <button class="btn-sm" data-scale="auto">Auto (12 modos)</button>
+<button class="btn-sm" data-scale="just">Justa (no temperada)</button>
+</div>
+<div class="row" style="align-items:center;gap:4px">
+<span style="font-size:9px;color:var(--text3);min-width:70px">Consonancia</span>
+<input type="range" id="just-blend" min="0" max="100" step="1" value="50" style="flex:1">
+<span style="font-size:9px;color:var(--text3);min-width:32px;text-align:right" id="just-blend-val">50%</span>
 </div>
 </div>
 
@@ -152,6 +183,22 @@ input[type="range"]{accent-color:var(--accent)}
 
 <div id="panel-center">
 <div id="wheel-wrap"></div>
+<div id="rta-wrap">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+<span style="font-family:'Roboto Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase">RTA · 20Hz–20kHz (análisis)</span>
+<div style="display:flex;gap:10px">
+<div class="opacity-row">
+<span style="font-size:8px;color:var(--text3)">Espectro</span>
+<input type="range" id="rta-op-spectrum" min="0" max="100" value="90">
+</div>
+<div class="opacity-row">
+<span style="font-size:8px;color:var(--text3)">Cuerpos</span>
+<input type="range" id="rta-op-markers" min="0" max="100" value="60">
+</div>
+</div>
+</div>
+<canvas id="rta-canvas"></canvas>
+</div>
 </div>
 
 <div id="panel-right">
@@ -430,23 +477,29 @@ const ZODIAC=['Aries','Tauro','Géminis','Cáncer','Leo','Virgo','Libra','Escorp
 const ZODIAC_SYM=['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
 
 const BODIES=[
-{key:'sun',name:'Sol',body:'Sun',color:'#FFD54A',orbitalDays:365.2422,rotationDays:25.38},
-{key:'moon',name:'Luna',body:'Moon',color:'#D8D2E8',orbitalDays:27.3217,rotationDays:27.3217},
-{key:'mercury',name:'Mercurio',body:'Mercury',color:'#B8B0A0',orbitalDays:87.969,rotationDays:58.646},
-{key:'venus',name:'Venus',body:'Venus',color:'#E8C979',orbitalDays:224.701,rotationDays:243.025},
-{key:'mars',name:'Marte',body:'Mars',color:'#D9548F',orbitalDays:686.980,rotationDays:1.02595},
-{key:'jupiter',name:'Júpiter',body:'Jupiter',color:'#E0A868',orbitalDays:4332.59,rotationDays:0.41354},
-{key:'saturn',name:'Saturno',body:'Saturn',color:'#C9B896',orbitalDays:10759.22,rotationDays:0.44401},
-{key:'uranus',name:'Urano',body:'Uranus',color:'#8FD3D9',orbitalDays:30688.5,rotationDays:0.71833},
-{key:'neptune',name:'Neptuno',body:'Neptune',color:'#6B8FD9',orbitalDays:60182,rotationDays:0.6713},
-{key:'pluto',name:'Plutón',body:'Pluto',color:'#9A8AFF',orbitalDays:90560,rotationDays:6.3872}
+{key:'sun',name:'Sol',body:'Sun',color:'#FFD54A',orbitalDays:365.2422,rotationDays:25.38,meaning:'Identidad, voluntad, el yo central'},
+{key:'moon',name:'Luna',body:'Moon',color:'#D8D2E8',orbitalDays:27.3217,rotationDays:27.3217,meaning:'Emoción, instinto, memoria'},
+{key:'mercury',name:'Mercurio',body:'Mercury',color:'#B8B0A0',orbitalDays:87.969,rotationDays:58.646,meaning:'Comunicación, pensamiento, aprendizaje'},
+{key:'venus',name:'Venus',body:'Venus',color:'#E8C979',orbitalDays:224.701,rotationDays:243.025,meaning:'Vínculos, valores, placer estético'},
+{key:'mars',name:'Marte',body:'Mars',color:'#D9548F',orbitalDays:686.980,rotationDays:1.02595,meaning:'Impulso, acción, conflicto/deseo'},
+{key:'jupiter',name:'Júpiter',body:'Jupiter',color:'#E0A868',orbitalDays:4332.59,rotationDays:0.41354,meaning:'Expansión, optimismo, sentido/fe'},
+{key:'saturn',name:'Saturno',body:'Saturn',color:'#C9B896',orbitalDays:10759.22,rotationDays:0.44401,meaning:'Estructura, límites, disciplina/tiempo'},
+{key:'uranus',name:'Urano',body:'Uranus',color:'#8FD3D9',orbitalDays:30688.5,rotationDays:0.71833,meaning:'Ruptura, cambio súbito, individuación'},
+{key:'neptune',name:'Neptuno',body:'Neptune',color:'#6B8FD9',orbitalDays:60182,rotationDays:0.6713,meaning:'Disolución, imaginación, lo intangible'},
+{key:'pluto',name:'Plutón',body:'Pluto',color:'#9A8AFF',orbitalDays:90560,rotationDays:6.3872,meaning:'Transformación profunda, poder, lo oculto'}
 ];
 
 const S={
 chart:null,
 bodies:{},
 playing:false,
-natalScale:'free', // 'free' | 'chromatic' | 'pentatonic' | 'diatonic' | 'auto'
+natalScale:'free',
+justBlend:50,
+rtaSpectrumOpacity:0.9,
+rtaMarkerOpacity:0.6,
+wheelSize:440,
+houseSystem:'equal', // 'equal' | 'placidus'
+ascendant:0, midheaven:0, houseCusps:[], // 'free' | 'chromatic' | 'pentatonic' | 'diatonic' | 'auto'
 audioCtx:null, cvMerger:null, cvChannelCount:4, cvDeviceId:'', cvActive:false, cvNodes:{},
 midiAccess:null, midiOutputId:''
 };
@@ -460,10 +513,131 @@ rhythmMode:'off',
 outType:'off',
 cc:1, channel:1, note:60, cvChannel:1, cvMode:'cont',
 natalLon:0, sign:'', signDeg:0, euclidSteps:8, euclidPulses:3,
+house:1,
 _drone:{}, _rhythmTimer:null, _step:0
 };
 });
 
+// ═══════════════════════════════════════════
+// HOUSES — Ascendente, Medio Cielo, Casas Iguales / Placidus
+// ═══════════════════════════════════════════
+function toRad(d){return d*Math.PI/180}
+function toDeg(r){return r*180/Math.PI}
+function norm360(x){return((x%360)+360)%360}
+function normPM180(x){const n=norm360(x);return n>180?n-360:n}
+const OBLIQUITY=23.4368;
+
+function eclToEquatorial(lonDeg,obliqDeg){
+const lon=toRad(lonDeg),ob=toRad(obliqDeg);
+const dec=Math.asin(Math.sin(ob)*Math.sin(lon));
+const ra=norm360(toDeg(Math.atan2(Math.sin(lon)*Math.cos(ob),Math.cos(lon))));
+return{ra,dec:toDeg(dec)};
+}
+function semiDiurnalArc(decDeg,latDeg){
+const val=-Math.tan(toRad(latDeg))*Math.tan(toRad(decDeg));
+return toDeg(Math.acos(Math.max(-1,Math.min(1,val))));
+}
+function calcAscendantMC(time,lat,lonObs){
+const gst=Astronomy.SiderealTime(time);
+const ramc=norm360(gst*15+lonObs);
+const observer=new Astronomy.Observer(lat,lonObs,0);
+const rot=Astronomy.Rotation_ECL_HOR(time,observer);
+function altAz(L){
+const rad=toRad(L);
+const vec=new Astronomy.Vector(Math.cos(rad),Math.sin(rad),0,time);
+const hor=Astronomy.RotateVector(rot,vec);
+return Astronomy.HorizonFromVector(hor,'normal');
+}
+let crossings=[],prevAlt=null,prevL=null;
+for(let L=0;L<=360.25;L+=0.1){
+const Lm=L%360;
+const s=altAz(Lm);
+if(prevAlt!==null&&Math.sign(prevAlt)!==Math.sign(s.lat)){
+const frac=-prevAlt/(s.lat-prevAlt);
+crossings.push({lon:norm360(prevL+frac*(L-prevL)),az:s.lon});
+}
+prevAlt=s.lat;prevL=L;
+}
+const asc=crossings.reduce((best,c)=>{const d=Math.abs(normPM180(c.az-90));return d<Math.abs(normPM180(best.az-90))?c:best}).lon;
+let bestL=null,bestDiff=999;
+for(let L=0;L<360;L+=0.02){
+const eq=eclToEquatorial(L,OBLIQUITY);
+const diff=Math.abs(normPM180(eq.ra-ramc));
+if(diff<bestDiff){bestDiff=diff;bestL=L}
+}
+return{asc,mc:bestL,ramc};
+}
+function solveDiurnalCusp(mcLon,ascLon,ramc,lat,frac){
+const N=1500;let bestL=null,bestAbs=999;
+for(let i=0;i<=N;i++){
+const t=i/N;
+const diff=normPM180(ascLon-mcLon);
+const L=norm360(mcLon+diff*t);
+const eq=eclToEquatorial(L,OBLIQUITY);
+const ha=normPM180(eq.ra-ramc);
+const sda=semiDiurnalArc(eq.dec,lat);
+const g=Math.abs(ha-frac*sda);
+if(g<bestAbs){bestAbs=g;bestL=L}
+}
+return bestL;
+}
+function solveNocturnalCusp(ascLon,icLon,ramc,lat,frac){
+const N=1500;let bestL=null,bestAbs=999;
+for(let i=0;i<=N;i++){
+const t=i/N;
+const diff=normPM180(icLon-ascLon);
+const L=norm360(ascLon+diff*t);
+const eq=eclToEquatorial(L,OBLIQUITY);
+const ha=normPM180(eq.ra-ramc);
+const sda=semiDiurnalArc(eq.dec,lat);
+const sna=180-sda;
+const g=Math.abs(ha-(180-frac*sna));
+if(g<bestAbs){bestAbs=g;bestL=L}
+}
+return bestL;
+}
+function computeHouses(date,lat,lonObs,system){
+const time=Astronomy.MakeTime(date);
+const{asc,mc,ramc}=calcAscendantMC(time,lat,lonObs);
+const ic=norm360(mc+180),desc=norm360(asc+180);
+let cusps;
+if(system==='placidus'&&Math.abs(lat)<66){ // cerca de círculos polares Placidus no converge bien
+const c11=solveDiurnalCusp(mc,asc,ramc,lat,1/3);
+const c12=solveDiurnalCusp(mc,asc,ramc,lat,2/3);
+const c2=solveNocturnalCusp(asc,ic,ramc,lat,2/3);
+const c3=solveNocturnalCusp(asc,ic,ramc,lat,1/3);
+cusps=[asc,c2,c3,ic,norm360(c11+180),norm360(c12+180),desc,norm360(c2+180),norm360(c3+180),mc,c11,c12];
+}else{
+cusps=Array.from({length:12},(_,i)=>norm360(asc+i*30));
+}
+return{asc,mc,cusps};
+}
+function houseOfLongitude(lon,cusps){
+for(let i=0;i<12;i++){
+const start=cusps[i],end=cusps[(i+1)%12];
+const span=normPM180(end-start+ (end<start?360:0))||360;
+let rel=normPM180(lon-start);if(rel<0)rel+=360;
+let fullSpan=end-start;if(fullSpan<=0)fullSpan+=360;
+if(rel<fullSpan)return i+1;
+}
+return 12;
+}
+
+// Mapeo musical por casa: registro (octavas extra), multiplicador de ritmo, brillo (Hz de filtro)
+const HOUSE_MUSIC=[
+{register:0, rhythmMult:1, brightness:9000}, // 1
+{register:-1,rhythmMult:1, brightness:3500}, // 2
+{register:1, rhythmMult:2, brightness:8000}, // 3
+{register:-2,rhythmMult:0.5,brightness:900}, // 4
+{register:0, rhythmMult:2, brightness:8500}, // 5
+{register:0, rhythmMult:1, brightness:3000}, // 6
+{register:0, rhythmMult:1, brightness:5000}, // 7
+{register:-2,rhythmMult:0.5,brightness:1000}, // 8
+{register:1, rhythmMult:1, brightness:7500}, // 9
+{register:1, rhythmMult:1, brightness:9500}, // 10
+{register:0, rhythmMult:2, brightness:4000}, // 11
+{register:-2,rhythmMult:0.25,brightness:600} // 12
+];
 // ═══════════════════════════════════════════
 // ASTRO CALC
 // ═══════════════════════════════════════════
@@ -471,20 +645,31 @@ function calcChart(){
 const dtVal=$('#natal-datetime').value;
 const d=dtVal?new Date(dtVal):new Date();
 const at=Astronomy.MakeTime(d);
+const lat=Number($('#natal-lat').value)||0;
+const lonObs=Number($('#natal-lon-input').value)||0;
+const houses=computeHouses(d,lat,lonObs,S.houseSystem);
+S.ascendant=houses.asc;S.midheaven=houses.mc;S.houseCusps=houses.cusps;
 BODIES.forEach(b=>{
 const ecl=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[b.body],at,true));
 const lon=((ecl.elon%360)+360)%360;
 const signIdx=Math.floor(lon/30);
 const st=S.bodies[b.key];
 st.natalLon=lon; st.sign=ZODIAC[signIdx]; st.signIdx=signIdx; st.signDeg=lon-signIdx*30;
+st.house=houseOfLongitude(lon,houses.cusps);
 const eu=computeEuclid(lon);
 st.euclidSteps=eu.steps; st.euclidPulses=eu.pulses;
 });
 S.chart=d;
 renderWheel();
 renderBodies();
+$('#asc-mc-info').innerHTML=`ASC ${ZODIAC[Math.floor(S.ascendant/30)]} ${(S.ascendant%30).toFixed(1)}° · MC ${ZODIAC[Math.floor(S.midheaven/30)]} ${(S.midheaven%30).toFixed(1)}°`;
 $('#export-wavetable-btn').disabled=false;
 $('#play-btn').disabled=false;
+if(S.playing){
+stopAllRhythms();
+updateAllAudio();
+BODIES.forEach(bb=>{if(S.bodies[bb.key].rhythmMode!=='off'&&S.bodies[bb.key].enabled)startBodyRhythm(bb.key)});
+}
 }
 
 function computeEuclid(lon){
@@ -540,7 +725,7 @@ return {x:cx+radius*Math.cos(angle),y:cy-radius*Math.sin(angle)};
 const PLANET_SYM={sun:'☉',moon:'☽',mercury:'☿',venus:'♀',mars:'♂',jupiter:'♃',saturn:'♄',uranus:'♅',neptune:'♆',pluto:'♇'};
 
 function renderWheel(){
-const size=460,cx=size/2,cy=size/2;
+const size=S.wheelSize||440,cx=size/2,cy=size/2;
 const rOuter=size*0.46,rSignOut=size*0.435,rSignIn=size*0.355,rTickOut=size*0.35,rTickIn=size*0.335,rHouseIn=size*0.10,rPlanetBase=size*0.235,rLabel=size*0.185;
 let svg=`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">`;
 
@@ -619,8 +804,8 @@ const card=document.createElement('div');card.className=`body-card${st.enabled?'
 
 const hdr=document.createElement('div');hdr.className='body-hdr';
 const dot=document.createElement('span');dot.className='body-dot';dot.style.background=b.color;hdr.appendChild(dot);
-const nm=document.createElement('span');nm.className='body-name';nm.textContent=b.name;hdr.appendChild(nm);
-const pos=document.createElement('span');pos.className='body-pos';pos.textContent=st.sign?`${st.sign} ${st.signDeg.toFixed(1)}°`:'—';hdr.appendChild(pos);
+const nm=document.createElement('span');nm.className='body-name';nm.textContent=b.name;nm.title=b.meaning;nm.style.cursor='help';nm.style.borderBottom='1px dotted var(--text4)';hdr.appendChild(nm);
+const pos=document.createElement('span');pos.className='body-pos';pos.textContent=st.sign?`${st.sign} ${st.signDeg.toFixed(1)}° · C${st.house}`:'—';hdr.appendChild(pos);
 const enBtn=document.createElement('button');enBtn.className=`btn-sm${st.enabled?' active':''}`;enBtn.style.marginLeft='4px';enBtn.textContent=st.enabled?'On':'Off';
 enBtn.addEventListener('click',()=>{
 st.enabled=!st.enabled;
@@ -734,6 +919,9 @@ area.appendChild(card);
 // ═══════════════════════════════════════════
 const SCALE_PENTATONIC=[0,3,5,7,10]; // minor pentatonic — no dissonant intervals
 const SCALE_DIATONIC=[0,2,3,5,7,8,10]; // natural minor
+// Afinación justa (5-limit) expresada en "semitonos equivalentes" (12*log2(ratio)) —
+// 1/1, 9/8, 5/4, 4/3, 3/2, 5/3, 15/8: los imanes de consonancia natural, no temperados.
+const JUST_INTERVALS=[0,2.0391,3.8631,4.9804,7.0196,8.8436,10.8827];
 
 function nearestInScale(semitone,pattern){
 const oct=Math.floor(semitone/12);
@@ -756,7 +944,95 @@ if(S.natalScale==='auto'){
 const rootShift=S.bodies.sun.signIdx||0; // 12 posibles raíces, una por signo solar
 return nearestInScale(semitoneRaw-rootShift,SCALE_PENTATONIC)+rootShift;
 }
+if(S.natalScale==='just'){
+const target=nearestInScale(semitoneRaw,JUST_INTERVALS);
+const blend=Math.max(0,Math.min(1,(S.justBlend||0)/100));
+return semitoneRaw*(1-blend)+target*blend; // mezcla en espacio log2 = mezcla real de proporciones
+}
 return semitoneRaw;
+}
+
+// ═══════════════════════════════════════════
+// MASTER BUS + RTA (analizador de espectro, solo visual/análisis)
+// ═══════════════════════════════════════════
+function getMasterBus(){
+if(!S.masterGain){
+S.masterGain=S.audioCtx.createGain();S.masterGain.gain.value=1;
+S.limiter=S.audioCtx.createDynamicsCompressor();
+S.limiter.threshold.value=-10;S.limiter.knee.value=6;S.limiter.ratio.value=16;S.limiter.attack.value=0.003;S.limiter.release.value=0.25;
+S.analyser=S.audioCtx.createAnalyser();S.analyser.fftSize=8192;S.analyser.smoothingTimeConstant=0.75;
+S.masterGain.connect(S.limiter);S.limiter.connect(S.analyser);S.analyser.connect(S.audioCtx.destination);
+startRTA();
+}
+return S.masterGain;
+}
+let rtaData=null,rtaRunning=false;
+function startRTA(){
+if(rtaRunning)return;
+rtaRunning=true;
+const canvas=$('#rta-canvas');
+const ctx2d=canvas.getContext('2d');
+const FMIN=20,FMAX=20000;
+const logMin=Math.log10(FMIN),logRange=Math.log10(FMAX)-Math.log10(FMIN);
+function freqToX(f,W){return(Math.log10(f)-logMin)/logRange*W}
+function xToFreq(x,W){return Math.pow(10,(x/W)*logRange+logMin)}
+function draw(){
+const W=canvas.width,H=canvas.height;
+if(!S.analyser){requestAnimationFrame(draw);return}
+if(!rtaData)rtaData=new Uint8Array(S.analyser.frequencyBinCount);
+S.analyser.getByteFrequencyData(rtaData);
+ctx2d.clearRect(0,0,W,H);
+ctx2d.fillStyle='#0D0D0C';ctx2d.fillRect(0,0,W,H);
+ctx2d.strokeStyle='#242420';ctx2d.lineWidth=1;
+ctx2d.font=Math.max(9,H*0.07)+"px 'Roboto Mono',monospace";ctx2d.fillStyle='#726E63';
+[20,50,100,200,500,1000,2000,5000,10000,20000].forEach(f=>{
+const x=freqToX(f,W);
+ctx2d.beginPath();ctx2d.moveTo(x,0);ctx2d.lineTo(x,H);ctx2d.stroke();
+ctx2d.fillText(f>=1000?(f/1000)+'k':f,x+2,H-3);
+});
+// curva suave del espectro real — un valor por columna de píxel (evita el look
+// disparejo de graficar bins de FFT lineales directo sobre un eje log)
+const nyquist=S.audioCtx.sampleRate/2;
+const specOp=(S.rtaSpectrumOpacity??0.9);
+const pts=[];
+for(let x=0;x<=W;x++){
+const f=xToFreq(x,W);
+const fLo=xToFreq(Math.max(0,x-1),W),fHi=xToFreq(Math.min(W,x+1),W);
+let binLo=Math.max(0,Math.floor(fLo*rtaData.length/nyquist));
+let binHi=Math.min(rtaData.length-1,Math.ceil(fHi*rtaData.length/nyquist));
+let mag=0;
+for(let b=binLo;b<=binHi;b++)mag=Math.max(mag,rtaData[b]);
+pts.push(mag/255);
+}
+ctx2d.beginPath();ctx2d.moveTo(0,H);
+pts.forEach((m,x)=>ctx2d.lineTo(x,H-m*H));
+ctx2d.lineTo(W,H);ctx2d.closePath();
+ctx2d.fillStyle=`rgba(0,179,164,${0.28*specOp})`;ctx2d.fill();
+ctx2d.beginPath();
+pts.forEach((m,x)=>x===0?ctx2d.moveTo(x,H-m*H):ctx2d.lineTo(x,H-m*H));
+ctx2d.strokeStyle=`rgba(0,179,164,${specOp})`;ctx2d.lineWidth=1.3;ctx2d.stroke();
+
+// marcadores de altura activa por cuerpo
+const markOp=(S.rtaMarkerOpacity??0.6);
+BODIES.forEach(b=>{
+const st=S.bodies[b.key];
+if(!st.enabled)return;
+['natal','orbital','rotational'].forEach(source=>{
+if(!st[source])return;
+const f=pitchFreq(b,source);
+if(f<FMIN||f>FMAX)return;
+const x=freqToX(f,W);
+ctx2d.strokeStyle=hexToRgba(b.color,markOp);ctx2d.lineWidth=1;
+ctx2d.beginPath();ctx2d.moveTo(x,0);ctx2d.lineTo(x,H*0.92);ctx2d.stroke();
+});
+});
+requestAnimationFrame(draw);
+}
+draw();
+}
+function hexToRgba(hex,a){
+const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),bl=parseInt(hex.slice(5,7),16);
+return `rgba(${r},${g},${bl},${a})`;
 }
 
 function pitchFreq(bodyDef,source){
@@ -772,7 +1048,12 @@ base=cosmicFreq(bodyDef.orbitalDays);
 }else{
 base=cosmicFreq(bodyDef.rotationDays);
 }
-return base*Math.pow(2,st.octave);
+const houseRegister=HOUSE_MUSIC[(st.house||1)-1].register;
+return base*Math.pow(2,st.octave+houseRegister);
+}
+function houseBrightnessHz(key){
+const st=S.bodies[key];
+return HOUSE_MUSIC[(st.house||1)-1].brightness;
 }
 function updateBodyAudio(key){
 if(!S.playing||!S.audioCtx)return;
@@ -784,17 +1065,19 @@ let node=st._drone[source];
 if(want){
 if(!node){
 const osc=S.audioCtx.createOscillator();osc.type='sine';
+const filt=S.audioCtx.createBiquadFilter();filt.type='lowpass';filt.frequency.value=houseBrightnessHz(key);filt.Q.value=0.7;
 const gain=S.audioCtx.createGain();gain.gain.value=0;
-osc.connect(gain);gain.connect(S.audioCtx.destination);
+osc.connect(filt);filt.connect(gain);gain.connect(getMasterBus());
 osc.start();
-node={osc,gain};
+node={osc,gain,filt};
 st._drone[source]=node;
 }
 node.osc.frequency.setTargetAtTime(pitchFreq(b,source),S.audioCtx.currentTime,0.05);
-node.gain.gain.setTargetAtTime(0.08,S.audioCtx.currentTime,0.3);
+node.filt.frequency.setTargetAtTime(houseBrightnessHz(key),S.audioCtx.currentTime,0.3);
+node.gain.gain.setTargetAtTime(0.055,S.audioCtx.currentTime,0.3);
 }else if(node){
 node.gain.gain.setTargetAtTime(0,S.audioCtx.currentTime,0.2);
-setTimeout(()=>{try{node.osc.stop();node.osc.disconnect();node.gain.disconnect()}catch(e){}},600);
+setTimeout(()=>{try{node.osc.stop();node.osc.disconnect();if(node.filt)node.filt.disconnect();node.gain.disconnect()}catch(e){}},600);
 delete st._drone[source];
 }
 });
@@ -805,7 +1088,7 @@ BODIES.forEach(b=>{
 const st=S.bodies[b.key];
 ['natal','orbital','rotational'].forEach(source=>{
 const node=st._drone[source];
-if(node){try{node.gain.gain.setTargetAtTime(0,S.audioCtx.currentTime,0.1);setTimeout(()=>{try{node.osc.stop();node.osc.disconnect();node.gain.disconnect()}catch(e){}},400)}catch(e){}}
+if(node){try{node.gain.gain.setTargetAtTime(0,S.audioCtx.currentTime,0.1);setTimeout(()=>{try{node.osc.stop();node.osc.disconnect();if(node.filt)node.filt.disconnect();node.gain.disconnect()}catch(e){}},400)}catch(e){}}
 });
 st._drone={};
 });
@@ -820,14 +1103,17 @@ const st=S.bodies[key];
 if(!st.enabled)return;
 if(S.audioCtx){
 const now=S.audioCtx.currentTime;
+const atk=Math.max(0.01,Number($('#env-attack').value)||0.8);
+const dec=Math.max(0.05,Number($('#env-decay').value)||4);
 ['natal','orbital','rotational'].forEach(source=>{
 if(!st[source])return;
 const osc=S.audioCtx.createOscillator();osc.type='sine';osc.frequency.value=pitchFreq(b,source);
-const gain=S.audioCtx.createGain();gain.gain.setValueAtTime(0,now);
-gain.gain.linearRampToValueAtTime(0.16,now+0.01);
-gain.gain.exponentialRampToValueAtTime(0.001,now+0.3);
-osc.connect(gain);gain.connect(S.audioCtx.destination);
-osc.start(now);osc.stop(now+0.35);
+const filt=S.audioCtx.createBiquadFilter();filt.type='lowpass';filt.frequency.value=houseBrightnessHz(key);filt.Q.value=0.7;
+const gain=S.audioCtx.createGain();gain.gain.setValueAtTime(0.0001,now);
+gain.gain.exponentialRampToValueAtTime(0.1,now+atk);
+gain.gain.exponentialRampToValueAtTime(0.0001,now+atk+dec);
+osc.connect(filt);filt.connect(gain);gain.connect(getMasterBus());
+osc.start(now);osc.stop(now+atk+dec+0.1);
 });
 }
 sendBodyOutput(key,true);
@@ -836,7 +1122,8 @@ function startBodyRhythm(key){
 const b=BODIES.find(x=>x.key===key);
 const st=S.bodies[key];
 if(st.rhythmMode==='off')return;
-const bpm=cosmicBPM(b.orbitalDays);
+const rhythmMult=HOUSE_MUSIC[(st.house||1)-1].rhythmMult;
+const bpm=cosmicBPM(b.orbitalDays)*rhythmMult;
 const intervalMs=60000/bpm;
 st._step=0;
 st._rhythmTimer=setInterval(()=>{
@@ -1110,6 +1397,8 @@ lat:Number($('#natal-lat').value)||0,
 lon:Number($('#natal-lon-input').value)||0,
 rootHz:Number($('#root-hz').value)||130.81,
 natalScale:S.natalScale,
+justBlend:S.justBlend,
+houseSystem:S.houseSystem,
 cvChannelCount:S.cvChannelCount,
 bodies:bodiesOut
 };
@@ -1123,6 +1412,16 @@ if(preset.natalScale){
 S.natalScale=preset.natalScale;
 $('#natal-scale-toggle').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x.dataset.scale===preset.natalScale));
 }
+if(preset.justBlend!==undefined){
+S.justBlend=preset.justBlend;
+$('#just-blend').value=preset.justBlend;
+$('#just-blend-val').textContent=preset.justBlend+'%';
+}
+if(preset.houseSystem){
+S.houseSystem=preset.houseSystem;
+$('#house-equal-btn').classList.toggle('active',preset.houseSystem==='equal');
+$('#house-placidus-btn').classList.toggle('active',preset.houseSystem==='placidus');
+}
 if(preset.cvChannelCount){S.cvChannelCount=preset.cvChannelCount;$('#cv-channel-count').value=preset.cvChannelCount}
 BODIES.forEach(b=>{
 const saved=preset.bodies?.[b.key];if(!saved)return;
@@ -1134,8 +1433,7 @@ octave:saved.octave||0,rhythmMode:saved.rhythmMode||'off',outType:saved.outType|
 cc:saved.cc||1,channel:saved.channel||1,note:saved.note??60,cvChannel:saved.cvChannel||1,cvMode:saved.cvMode||'cont'
 });
 });
-calcChart();
-if(S.playing){updateAllAudio();BODIES.forEach(b=>{if(S.bodies[b.key].rhythmMode!=='off'&&S.bodies[b.key].enabled)startBodyRhythm(b.key)})}
+calcChart(); // calcChart ya refresca audio/ritmos si S.playing — no duplicar acá
 }
 async function fetchPresets(){
 const{data,error}=await sb.from('astral_presets').select('id,name,data,created_at').order('created_at',{ascending:false});
@@ -1185,6 +1483,24 @@ renderPresets();
 // ═══════════════════════════════════════════
 (function(){const n=new Date();n.setMinutes(n.getMinutes()-n.getTimezoneOffset());$('#natal-datetime').value=n.toISOString().slice(0,16)})();
 $('#calc-btn').addEventListener('click',calcChart);
+$('#house-equal-btn').addEventListener('click',()=>{
+S.houseSystem='equal';
+$('#house-equal-btn').classList.add('active');$('#house-placidus-btn').classList.remove('active');
+if(S.chart)calcChart();
+});
+$('#house-placidus-btn').addEventListener('click',()=>{
+S.houseSystem='placidus';
+$('#house-placidus-btn').classList.add('active');$('#house-equal-btn').classList.remove('active');
+if(S.chart)calcChart();
+});
+$('#env-attack').addEventListener('input',e=>{$('#env-attack-val').textContent=Number(e.target.value).toFixed(2)+'s'});
+$('#env-decay').addEventListener('input',e=>{$('#env-decay-val').textContent=Number(e.target.value).toFixed(1)+'s'});
+$('#root-hz').addEventListener('input',()=>{if(S.playing)updateAllAudio()});
+$('#just-blend').addEventListener('input',e=>{
+S.justBlend=Number(e.target.value);
+$('#just-blend-val').textContent=S.justBlend+'%';
+if(S.playing)updateAllAudio();
+});
 $('#natal-scale-toggle').querySelectorAll('button').forEach(b=>{
 b.addEventListener('click',()=>{
 S.natalScale=b.dataset.scale;
@@ -1192,7 +1508,25 @@ $('#natal-scale-toggle').querySelectorAll('button').forEach(x=>x.classList.toggl
 if(S.playing)updateAllAudio();
 });
 });
+$('#rta-op-spectrum').addEventListener('input',e=>{S.rtaSpectrumOpacity=Number(e.target.value)/100});
+$('#rta-op-markers').addEventListener('input',e=>{S.rtaMarkerOpacity=Number(e.target.value)/100});
+
+function resizeRTACanvas(){
+const canvas=$('#rta-canvas');
+const rect=canvas.getBoundingClientRect();
+const dpr=window.devicePixelRatio||1;
+canvas.width=Math.max(100,Math.floor(rect.width*dpr));
+canvas.height=Math.max(60,Math.floor(rect.height*dpr));
+}
+function fitCenterPanel(){
+const wrap=$('#wheel-wrap');
+const rect=wrap.getBoundingClientRect();
+S.wheelSize=Math.max(200,Math.min(rect.width,rect.height)-16);
 renderWheel();
+resizeRTACanvas();
+}
+window.addEventListener('resize',fitCenterPanel);
+fitCenterPanel();
 renderBodies();
 
 </script>
