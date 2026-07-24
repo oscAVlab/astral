@@ -27,7 +27,7 @@ input[type="range"]{accent-color:var(--accent)}
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 
-#header{height:80px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:5px 14px;border-bottom:1px solid var(--border);background:var(--bg2)}
+#header{height:50px;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:5px 14px;border-bottom:1px solid var(--border);background:var(--bg2)}
 .brand-mark{display:flex;align-items:baseline;flex-shrink:0;padding-right:10px;border-right:1px solid var(--border2);font-family:'Roboto',sans-serif;font-size:15px;letter-spacing:-0.025em;line-height:1}
 .brand-mark .bm-text{color:rgba(244,241,234,0.65);font-weight:300}
 .brand-mark .bm-block{display:inline-flex;transform:translateY(3.75px);margin-left:1.13px;margin-right:0.53px}
@@ -41,6 +41,9 @@ input[type="range"]{accent-color:var(--accent)}
 #rta-canvas{flex:1;width:100%;min-height:0;display:block;border:1px solid var(--border);border-radius:4px}
 .opacity-row{display:flex;align-items:center;gap:5px}
 .opacity-row input[type="range"]{width:70px}
+.search-results{background:var(--bg2);border:1px solid var(--border2);border-radius:3px;margin-top:2px;overflow:hidden;position:relative;z-index:10}
+.search-result{padding:4px 8px;cursor:pointer;font-size:11px;border-bottom:1px solid var(--border);color:#B0AFA8}
+.search-result:hover{background:var(--bg3)}
 #panel-right{width:340px;flex-shrink:0;border-left:1px solid var(--border);display:flex;flex-direction:column}
 #bodies-list{flex:1;overflow-y:auto;padding:8px}
 
@@ -76,7 +79,7 @@ input[type="range"]{accent-color:var(--accent)}
 <path d="M 3.15 0 L 5.5125 -3.36 L 7.875 0 L 10.2375 3.36 L 12.6 0" fill="none" stroke="#00B3A4" stroke-width="1.05" stroke-linejoin="miter" stroke-linecap="square"/>
 </svg></span><span class="bm-text">lab</span>
 </div>
-<h1>Astral <span style="font-family:'Roboto Mono',monospace;font-size:9px;color:var(--text4);font-weight:400;letter-spacing:0.04em;vertical-align:middle">v1.07</span></h1>
+<h1>Astral <span style="font-family:'Roboto Mono',monospace;font-size:9px;color:var(--text4);font-weight:400;letter-spacing:0.04em;vertical-align:middle">v1.08</span></h1>
 <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
 <button class="btn-sm" id="play-btn" disabled>▶ Play</button>
 <button class="btn-sm" id="stop-btn" disabled>■ Stop</button>
@@ -91,6 +94,12 @@ input[type="range"]{accent-color:var(--accent)}
 <div class="row" style="margin-bottom:4px">
 <input type="datetime-local" id="natal-datetime" style="flex:1">
 </div>
+<div class="row" style="margin-bottom:2px;position:relative">
+<input type="text" id="city-input" placeholder="Ciudad..." value="Quito" style="flex:1">
+<button class="btn-sm" id="city-search-btn">Buscar</button>
+<div id="city-search-results" style="position:absolute;top:100%;left:0;right:0;z-index:20"></div>
+</div>
+<div id="city-location-info" style="font-family:'Roboto Mono',monospace;font-size:9px;color:var(--text3);margin-bottom:4px">Quito (-0.18, -78.47)</div>
 <div class="row" style="margin-bottom:4px">
 <input type="number" id="natal-lat" placeholder="Lat" value="-0.18" step="0.01" style="width:70px">
 <input type="number" id="natal-lon-input" placeholder="Lon" value="-78.47" step="0.01" style="width:70px">
@@ -116,6 +125,16 @@ input[type="range"]{accent-color:var(--accent)}
 <input type="range" id="env-decay" min="0.2" max="10" step="0.1" value="4" style="flex:1">
 <span style="font-size:9px;color:var(--text3);min-width:30px;text-align:right" id="env-decay-val">4.0s</span>
 </div>
+</div>
+
+<div class="section">
+<label class="label">EQ maestro</label>
+<div class="row" style="align-items:center;gap:4px">
+<span style="font-size:9px;color:var(--text3);min-width:70px">Medios 350Hz</span>
+<input type="range" id="mid-cut" min="-24" max="6" step="0.5" value="-6" style="flex:1">
+<span style="font-size:9px;color:var(--text3);min-width:34px;text-align:right" id="mid-cut-val">-6dB</span>
+</div>
+<div style="font-size:8px;color:var(--text4);margin-top:2px">Corta/realza la zona 160-800Hz típica de saturación en pads</div>
 </div>
 
 <div class="section">
@@ -176,12 +195,19 @@ input[type="range"]{accent-color:var(--accent)}
 <input type="text" id="preset-name" placeholder="Nombre del preset..." style="flex:1">
 <button class="btn" id="save-preset-btn" style="font-size:10px;padding:3px 8px;white-space:nowrap">Guardar</button>
 </div>
+<div class="row" style="margin-bottom:4px">
+<button class="btn-sm" id="update-preset-btn" style="flex:1;display:none">⟳ Actualizar "<span id="update-preset-name-label"></span>"</button>
+</div>
 <div id="presets-list"></div>
 </div>
 
 </div>
 
 <div id="panel-center">
+<div id="chart-info-bar" style="text-align:center;margin-bottom:6px;font-family:'Roboto Mono',monospace;color:var(--text3)">
+<div id="chart-info-preset" style="font-size:11px;color:var(--text2);letter-spacing:0.04em">Sin preset cargado</div>
+<div id="chart-info-details" style="font-size:9px;margin-top:2px">—</div>
+</div>
 <div id="wheel-wrap"></div>
 <div id="rta-wrap">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
@@ -498,6 +524,8 @@ justBlend:50,
 rtaSpectrumOpacity:0.9,
 rtaMarkerOpacity:0.6,
 wheelSize:440,
+cityName:'Quito',
+currentPresetId:null,currentPresetName:'',
 houseSystem:'equal', // 'equal' | 'placidus'
 ascendant:0, midheaven:0, houseCusps:[], // 'free' | 'chromatic' | 'pentatonic' | 'diatonic' | 'auto'
 audioCtx:null, cvMerger:null, cvChannelCount:4, cvDeviceId:'', cvActive:false, cvNodes:{},
@@ -514,6 +542,7 @@ outType:'off',
 cc:1, channel:1, note:60, cvChannel:1, cvMode:'cont',
 natalLon:0, sign:'', signDeg:0, euclidSteps:8, euclidPulses:3,
 house:1,
+level:1,
 _drone:{}, _rhythmTimer:null, _step:0
 };
 });
@@ -638,6 +667,17 @@ const HOUSE_MUSIC=[
 {register:0, rhythmMult:2, brightness:4000}, // 11
 {register:-2,rhythmMult:0.25,brightness:600} // 12
 ];
+function updateChartInfoBar(){
+const dtVal=$('#natal-datetime').value;
+let dtStr='—';
+if(dtVal){
+const d=new Date(dtVal);
+dtStr=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+$('#chart-info-preset').textContent=S.currentPresetName||'Sin preset cargado';
+$('#chart-info-details').textContent=`${dtStr} · ${S.cityName||'—'}`;
+}
+
 // ═══════════════════════════════════════════
 // ASTRO CALC
 // ═══════════════════════════════════════════
@@ -663,6 +703,7 @@ S.chart=d;
 renderWheel();
 renderBodies();
 $('#asc-mc-info').innerHTML=`ASC ${ZODIAC[Math.floor(S.ascendant/30)]} ${(S.ascendant%30).toFixed(1)}° · MC ${ZODIAC[Math.floor(S.midheaven/30)]} ${(S.midheaven%30).toFixed(1)}°`;
+updateChartInfoBar();
 $('#export-wavetable-btn').disabled=false;
 $('#play-btn').disabled=false;
 if(S.playing){
@@ -820,11 +861,21 @@ card.appendChild(hdr);
 const pr=document.createElement('div');pr.className='ctrl-row';
 pr.insertAdjacentHTML('beforeend','<span class="lbl">Altura</span>');
 [['natal','Natal'],['orbital','Orbital'],['rotational','Rotac.']].forEach(([k,label])=>{
-const pb=document.createElement('button');pb.className=`btn-sm${st[k]?' active':''}`;pb.textContent=label;
+const pb=document.createElement('button');pb.className=`btn-sm${st[k]?' active':''}`;
+const hz=st.natalLon!==undefined?pitchFreq(b,k):null;
+pb.textContent=st[k]&&hz?`${label} (${hz.toFixed(1)}Hz)`:label;
 pb.addEventListener('click',()=>{st[k]=!st[k];updateBodyAudio(b.key);renderBodies()});
 pr.appendChild(pb);
 });
 card.appendChild(pr);
+
+const lvl=document.createElement('div');lvl.className='ctrl-row';
+lvl.insertAdjacentHTML('beforeend','<span class="lbl">Nivel</span>');
+const lvlI=document.createElement('input');lvlI.type='range';lvlI.min=0;lvlI.max=150;lvlI.value=Math.round((st.level??1)*100);lvlI.style.flex='1';
+const lvlVal=document.createElement('span');lvlVal.style.cssText='font-size:9px;color:var(--text3);min-width:30px;text-align:right';lvlVal.textContent=Math.round((st.level??1)*100)+'%';
+lvlI.addEventListener('input',e=>{st.level=Number(e.target.value)/100;lvlVal.textContent=e.target.value+'%'});
+lvl.appendChild(lvlI);lvl.appendChild(lvlVal);
+card.appendChild(lvl);
 
 const or_=document.createElement('div');or_.className='ctrl-row';
 or_.insertAdjacentHTML('beforeend','<span class="lbl">Octava</span>');
@@ -958,10 +1009,12 @@ return semitoneRaw;
 function getMasterBus(){
 if(!S.masterGain){
 S.masterGain=S.audioCtx.createGain();S.masterGain.gain.value=1;
+S.midFilter=S.audioCtx.createBiquadFilter();S.midFilter.type='peaking';
+S.midFilter.frequency.value=350;S.midFilter.Q.value=0.9;S.midFilter.gain.value=Number($('#mid-cut').value)||0;
 S.limiter=S.audioCtx.createDynamicsCompressor();
 S.limiter.threshold.value=-10;S.limiter.knee.value=6;S.limiter.ratio.value=16;S.limiter.attack.value=0.003;S.limiter.release.value=0.25;
 S.analyser=S.audioCtx.createAnalyser();S.analyser.fftSize=8192;S.analyser.smoothingTimeConstant=0.75;
-S.masterGain.connect(S.limiter);S.limiter.connect(S.analyser);S.analyser.connect(S.audioCtx.destination);
+S.masterGain.connect(S.midFilter);S.midFilter.connect(S.limiter);S.limiter.connect(S.analyser);S.analyser.connect(S.audioCtx.destination);
 startRTA();
 }
 return S.masterGain;
@@ -1074,7 +1127,7 @@ st._drone[source]=node;
 }
 node.osc.frequency.setTargetAtTime(pitchFreq(b,source),S.audioCtx.currentTime,0.05);
 node.filt.frequency.setTargetAtTime(houseBrightnessHz(key),S.audioCtx.currentTime,0.3);
-node.gain.gain.setTargetAtTime(0.055,S.audioCtx.currentTime,0.3);
+node.gain.gain.setTargetAtTime(0.055*(st.level??1),S.audioCtx.currentTime,0.3);
 }else if(node){
 node.gain.gain.setTargetAtTime(0,S.audioCtx.currentTime,0.2);
 setTimeout(()=>{try{node.osc.stop();node.osc.disconnect();if(node.filt)node.filt.disconnect();node.gain.disconnect()}catch(e){}},600);
@@ -1110,7 +1163,7 @@ if(!st[source])return;
 const osc=S.audioCtx.createOscillator();osc.type='sine';osc.frequency.value=pitchFreq(b,source);
 const filt=S.audioCtx.createBiquadFilter();filt.type='lowpass';filt.frequency.value=houseBrightnessHz(key);filt.Q.value=0.7;
 const gain=S.audioCtx.createGain();gain.gain.setValueAtTime(0.0001,now);
-gain.gain.exponentialRampToValueAtTime(0.1,now+atk);
+gain.gain.exponentialRampToValueAtTime(Math.max(0.0001,0.1*(st.level??1)),now+atk);
 gain.gain.exponentialRampToValueAtTime(0.0001,now+atk+dec);
 osc.connect(filt);filt.connect(gain);gain.connect(getMasterBus());
 osc.start(now);osc.stop(now+atk+dec+0.1);
@@ -1388,7 +1441,7 @@ const st=S.bodies[b.key];
 bodiesOut[b.key]={
 enabled:st.enabled,natal:st.natal,orbital:st.orbital,rotational:st.rotational,
 octave:st.octave,rhythmMode:st.rhythmMode,outType:st.outType,
-cc:st.cc,channel:st.channel,note:st.note,cvChannel:st.cvChannel,cvMode:st.cvMode
+cc:st.cc,channel:st.channel,note:st.note,cvChannel:st.cvChannel,cvMode:st.cvMode,level:st.level??1
 };
 });
 return{
@@ -1399,6 +1452,8 @@ rootHz:Number($('#root-hz').value)||130.81,
 natalScale:S.natalScale,
 justBlend:S.justBlend,
 houseSystem:S.houseSystem,
+cityName:S.cityName,
+midCut:Number($('#mid-cut').value)||-6,
 cvChannelCount:S.cvChannelCount,
 bodies:bodiesOut
 };
@@ -1422,6 +1477,16 @@ S.houseSystem=preset.houseSystem;
 $('#house-equal-btn').classList.toggle('active',preset.houseSystem==='equal');
 $('#house-placidus-btn').classList.toggle('active',preset.houseSystem==='placidus');
 }
+if(preset.cityName){
+S.cityName=preset.cityName;
+$('#city-input').value=preset.cityName.split(',')[0];
+$('#city-location-info').textContent=`${preset.cityName} (${Number(preset.lat).toFixed(2)}, ${Number(preset.lon).toFixed(2)})`;
+}
+if(preset.midCut!==undefined){
+$('#mid-cut').value=preset.midCut;
+$('#mid-cut-val').textContent=preset.midCut+'dB';
+if(S.midFilter)S.midFilter.gain.setTargetAtTime(preset.midCut,S.audioCtx.currentTime,0.05);
+}
 if(preset.cvChannelCount){S.cvChannelCount=preset.cvChannelCount;$('#cv-channel-count').value=preset.cvChannelCount}
 BODIES.forEach(b=>{
 const saved=preset.bodies?.[b.key];if(!saved)return;
@@ -1430,7 +1495,7 @@ stopBodyRhythm(b.key);
 Object.assign(st,{
 enabled:saved.enabled!==false,natal:!!saved.natal,orbital:!!saved.orbital,rotational:!!saved.rotational,
 octave:saved.octave||0,rhythmMode:saved.rhythmMode||'off',outType:saved.outType||'off',
-cc:saved.cc||1,channel:saved.channel||1,note:saved.note??60,cvChannel:saved.cvChannel||1,cvMode:saved.cvMode||'cont'
+cc:saved.cc||1,channel:saved.channel||1,note:saved.note??60,cvChannel:saved.cvChannel||1,cvMode:saved.cvMode||'cont',level:saved.level??1
 });
 });
 calcChart(); // calcChart ya refresca audio/ritmos si S.playing — no duplicar acá
@@ -1446,19 +1511,35 @@ area.innerHTML='<div style="font-size:10px;color:var(--text4);padding:3px 4px">C
 const{data,error}=await fetchPresets();
 area.innerHTML='';
 if(error){
-area.innerHTML=`<div style="font-size:10px;color:var(--danger);padding:3px 4px;line-height:1.4">Error Supabase: ${error.message||error.code||'desconocido'}<br><span style="color:var(--text4)">Revisá que la tabla astral_presets exista con RLS pública (select/insert/delete) en el proyecto Tools.</span></div>`;
+area.innerHTML=`<div style="font-size:10px;color:var(--danger);padding:3px 4px;line-height:1.4">Error Supabase: ${error.message||error.code||'desconocido'}<br><span style="color:var(--text4)">Revisá que la tabla astral_presets exista con RLS pública (select/insert/delete/update) en el proyecto Tools.</span></div>`;
 return;
 }
 if(!data.length){area.innerHTML='<div style="font-size:10px;color:var(--text4);padding:3px 4px">Sin presets</div>';return}
 data.forEach(p=>{
 const div=document.createElement('div');div.className='preset-item';
-div.innerHTML=`<span style="flex:1">${p.name}</span><span class="preset-del" title="Borrar">✕</span>`;
-div.addEventListener('click',e=>{if(e.target.classList.contains('preset-del'))return;loadPreset(p.data)});
+div.innerHTML=`<span style="flex:1">${p.name}</span><span class="preset-edit" title="Renombrar" style="font-size:10px;color:var(--text4);cursor:pointer;padding:0 3px">✎</span><span class="preset-del" title="Borrar">✕</span>`;
+div.addEventListener('click',e=>{if(e.target.classList.contains('preset-del')||e.target.classList.contains('preset-edit'))return;
+loadPreset(p.data);
+S.currentPresetId=p.id;S.currentPresetName=p.name;
+updateChartInfoBar();
+$('#update-preset-btn').style.display='block';
+$('#update-preset-name-label').textContent=p.name;
+});
+div.querySelector('.preset-edit').addEventListener('click',async e=>{
+e.stopPropagation();
+const newName=prompt('Nuevo nombre para el preset:',p.name);
+if(!newName||!newName.trim()||newName.trim()===p.name)return;
+const{error}=await sb.from('astral_presets').update({name:newName.trim()}).eq('id',p.id);
+if(error){alert('Error al renombrar: '+error.message);return}
+if(S.currentPresetId===p.id){S.currentPresetName=newName.trim();updateChartInfoBar();$('#update-preset-name-label').textContent=newName.trim()}
+renderPresets();
+});
 div.querySelector('.preset-del').addEventListener('click',async e=>{
 e.stopPropagation();
 if(!confirm(`¿Borrar preset "${p.name}"?`))return;
 const{error}=await sb.from('astral_presets').delete().eq('id',p.id);
 if(error){alert('Error al borrar: '+error.message);return}
+if(S.currentPresetId===p.id){S.currentPresetId=null;S.currentPresetName='';updateChartInfoBar();$('#update-preset-btn').style.display='none'}
 renderPresets();
 });
 area.appendChild(div);
@@ -1469,12 +1550,25 @@ const name=$('#preset-name').value.trim();
 if(!name){alert('Poné un nombre para el preset');return}
 const btn=$('#save-preset-btn');btn.disabled=true;btn.textContent='Guardando…';
 try{
-const{error}=await sb.from('astral_presets').insert({name,data:serializePreset()});
+const{data,error}=await sb.from('astral_presets').insert({name,data:serializePreset()}).select().single();
 if(error)throw error;
 $('#preset-name').value='';
+S.currentPresetId=data.id;S.currentPresetName=data.name;
+updateChartInfoBar();
+$('#update-preset-btn').style.display='block';
+$('#update-preset-name-label').textContent=data.name;
 renderPresets();
 }catch(e){alert('Error al guardar: '+e.message)}
 btn.disabled=false;btn.textContent='Guardar';
+});
+$('#update-preset-btn').addEventListener('click',async()=>{
+if(!S.currentPresetId)return;
+const btn=$('#update-preset-btn');btn.disabled=true;const orig=btn.innerHTML;btn.textContent='Actualizando…';
+try{
+const{error}=await sb.from('astral_presets').update({data:serializePreset()}).eq('id',S.currentPresetId);
+if(error)throw error;
+}catch(e){alert('Error al actualizar: '+e.message)}
+btn.disabled=false;btn.innerHTML=orig;
 });
 renderPresets();
 
@@ -1482,6 +1576,35 @@ renderPresets();
 // INIT
 // ═══════════════════════════════════════════
 (function(){const n=new Date();n.setMinutes(n.getMinutes()-n.getTimezoneOffset());$('#natal-datetime').value=n.toISOString().slice(0,16)})();
+async function searchCity(){
+const q=$('#city-input').value.trim();if(!q)return;
+$('#city-search-btn').textContent='…';
+try{
+const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=es`);
+const j=await r.json();
+const box=$('#city-search-results');box.innerHTML='';
+if(j.results?.length){
+const w=document.createElement('div');w.className='search-results';
+j.results.forEach(res=>{
+const d=document.createElement('div');d.className='search-result';
+d.textContent=`${res.name}, ${res.admin1||''} — ${res.country||''}`;
+d.addEventListener('click',()=>{
+S.cityName=`${res.name}, ${res.country||''}`;
+$('#natal-lat').value=res.latitude.toFixed(4);
+$('#natal-lon-input').value=res.longitude.toFixed(4);
+$('#city-input').value=res.name;
+$('#city-location-info').textContent=`${S.cityName} (${res.latitude.toFixed(2)}, ${res.longitude.toFixed(2)})`;
+box.innerHTML='';
+});
+w.appendChild(d);
+});
+box.appendChild(w);
+}
+}catch(e){console.error(e)}
+$('#city-search-btn').textContent='Buscar';
+}
+$('#city-search-btn').addEventListener('click',searchCity);
+$('#city-input').addEventListener('keydown',e=>{if(e.key==='Enter')searchCity()});
 $('#calc-btn').addEventListener('click',calcChart);
 $('#house-equal-btn').addEventListener('click',()=>{
 S.houseSystem='equal';
@@ -1495,6 +1618,11 @@ if(S.chart)calcChart();
 });
 $('#env-attack').addEventListener('input',e=>{$('#env-attack-val').textContent=Number(e.target.value).toFixed(2)+'s'});
 $('#env-decay').addEventListener('input',e=>{$('#env-decay-val').textContent=Number(e.target.value).toFixed(1)+'s'});
+$('#mid-cut').addEventListener('input',e=>{
+const v=Number(e.target.value);
+$('#mid-cut-val').textContent=v+'dB';
+if(S.midFilter)S.midFilter.gain.setTargetAtTime(v,S.audioCtx.currentTime,0.05);
+});
 $('#root-hz').addEventListener('input',()=>{if(S.playing)updateAllAudio()});
 $('#just-blend').addEventListener('input',e=>{
 S.justBlend=Number(e.target.value);
